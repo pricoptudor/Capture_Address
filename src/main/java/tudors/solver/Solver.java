@@ -7,6 +7,7 @@ import tudors.administratives.Country;
 import tudors.administratives.Region;
 import tudors.administratives.ScoreRegion;
 import tudors.administratives.State;
+import tudors.model.AddressResponse;
 import tudors.tools.CSVReader;
 
 import java.util.*;
@@ -17,7 +18,9 @@ public class Solver {
     private List<ScoreRegion> scoreRegions = new ArrayList<>();
 
     //webservice for searching postal codes:
-    public static void searchPostalCode(String postalCode) throws Exception {
+    public List<AddressResponse> searchPostalCode(String postalCode, Integer score) throws Exception {
+        List<AddressResponse> found = new ArrayList<>();
+
         WebService.setUserName("tudor007"); // add your username here
 
         ToponymSearchCriteria toponymSearchCriteria = new ToponymSearchCriteria();
@@ -40,9 +43,11 @@ public class Solver {
 
             ToponymSearchResult toponyms = WebService.search(toponymSearchCriteria);
             for(Toponym toponym:toponyms.getToponyms()){
-                System.out.println(toponym.getName()+" : "+toponym.getAdminName1()+" : "+toponym.getCountryName());
+                found.add(new AddressResponse(toponym.getCountryName(),toponym.getAdminName1(),toponym.getName(),score));
+                //System.out.println(toponym.getName()+" : "+toponym.getAdminName1()+" : "+toponym.getCountryName());
             }
         }
+        return found;
     }
 
     private void addOrReplace(ScoreRegion currentRegion) {

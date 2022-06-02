@@ -1,8 +1,11 @@
 package tudors.services;
 
+import lombok.extern.java.Log;
+import org.apache.commons.text.WordUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tudors.administratives.*;
+import tudors.model.AddressResponse;
 import tudors.solver.Solver;
 import tudors.tools.CSVReader;
 
@@ -11,6 +14,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+@Log
 @Service
 public class AddressService {
     @Autowired
@@ -18,6 +22,15 @@ public class AddressService {
 
     @Autowired
     private Solver solver;
+
+    public List<AddressResponse> findSolutionByPostalCode(String postalCode){
+        try {
+            return solver.searchPostalCode(postalCode,3000);
+        } catch (Exception e) {
+            log.severe("Cannot find region by postal code!");
+            return new ArrayList<>();
+        }
+    }
 
     private List<ScoreRegion> findRegions(List<String> inputFields, List<? extends Region> regions, List<Integer> scores, Integer extraScore) {
         List<ScoreRegion> foundRegions = new ArrayList<>();
@@ -29,7 +42,19 @@ public class AddressService {
         return foundRegions;
     }
 
-    public List<ScoreRegion> findSolutions(List<String> inputFields) {
+    public List<AddressResponse> findSolutionByName(List<String> inputFields){
+        List<AddressResponse> addressResponses=new ArrayList<>();
+        for(ScoreRegion region:findSolutions(inputFields)){
+            String cityName= WordUtils.capitalize(((City)region.getRegion()).getAsciiName());
+            String stateName = WordUtils.capitalize(((City)region.getRegion()).getState().getAsciiName());
+            String countryName = WordUtils.capitalize(((City)region.getRegion()).getState().getCountry().getAsciiName());
+            Integer score = region.getScore();
+            addressResponses.add(new AddressResponse(countryName,stateName,cityName,score));
+        }
+        return addressResponses;
+    }
+
+    private List<ScoreRegion> findSolutions(List<String> inputFields) {
         List<ScoreRegion> countries;
         List<ScoreRegion> states = new ArrayList<>();
         List<ScoreRegion> cities = new ArrayList<>();

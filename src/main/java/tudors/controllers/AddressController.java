@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tudors.administratives.ScoreRegion;
+import tudors.model.AddressResponse;
 import tudors.services.AddressService;
 
 import java.util.ArrayList;
@@ -25,11 +26,13 @@ public class AddressController {
     }
 
     @GetMapping("/addresses")
-    public List<ScoreRegion> getAddresses(@RequestParam(defaultValue = "") String country,
-                                          @RequestParam(defaultValue = "") String state,
-                                          @RequestParam(defaultValue = "") String city,
-                                          @RequestParam(defaultValue = "") String postalCode,
-                                          @RequestParam(defaultValue = "") String streetLine) {
-        return this.addressService.findSolutions(Arrays.asList(country, state, city, postalCode, streetLine));
+    public List<AddressResponse> getAddresses(@RequestParam(defaultValue = "") String country,
+                                              @RequestParam(defaultValue = "") String state,
+                                              @RequestParam(defaultValue = "") String city,
+                                              @RequestParam(defaultValue = "") String postalCode,
+                                              @RequestParam(defaultValue = "") String streetLine) {
+        List<AddressResponse> responses = addressService.findSolutionByPostalCode(postalCode);
+        responses.addAll(addressService.findSolutionByName(Arrays.asList(country, state, city, postalCode, streetLine)));
+        return responses;
     }
 }
