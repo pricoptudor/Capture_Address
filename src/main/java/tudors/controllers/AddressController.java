@@ -1,11 +1,11 @@
 package tudors.controllers;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import tudors.administratives.InputAddress;
 import tudors.administratives.ScoreRegion;
 import tudors.model.AddressResponse;
 import tudors.services.AddressService;
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Log
 @RestController
 @CrossOrigin
 @Tag(name = "Address Controller")
@@ -31,8 +32,17 @@ public class AddressController {
                                               @RequestParam(defaultValue = "") String city,
                                               @RequestParam(defaultValue = "") String postalCode,
                                               @RequestParam(defaultValue = "") String streetLine) {
-        List<AddressResponse> responses = addressService.findSolutionByPostalCode(postalCode);
+        List<AddressResponse> responses = new ArrayList<>();
+        long stamp1 = System.currentTimeMillis();
+        if (postalCode != null) {
+            responses = addressService.findSolutionByPostalCode(postalCode);
+        }
+        log.info("Time for postal code search: " + (System.currentTimeMillis() - stamp1));
+
+        stamp1 = System.currentTimeMillis();
         responses.addAll(addressService.findSolutionByName(Arrays.asList(country, state, city, postalCode, streetLine)));
+        log.info("Time for search everything: " + (System.currentTimeMillis() - stamp1));
+
         return responses;
     }
 }

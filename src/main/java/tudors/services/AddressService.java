@@ -23,9 +23,9 @@ public class AddressService {
     @Autowired
     private Solver solver;
 
-    public List<AddressResponse> findSolutionByPostalCode(String postalCode){
+    public List<AddressResponse> findSolutionByPostalCode(String postalCode) {
         try {
-            return solver.searchPostalCode(postalCode,3000);
+            return solver.searchPostalCode(postalCode, 3000);
         } catch (Exception e) {
             log.severe("Cannot find region by postal code!");
             return new ArrayList<>();
@@ -42,14 +42,14 @@ public class AddressService {
         return foundRegions;
     }
 
-    public List<AddressResponse> findSolutionByName(List<String> inputFields){
-        List<AddressResponse> addressResponses=new ArrayList<>();
-        for(ScoreRegion region:findSolutions(inputFields)){
-            String cityName= WordUtils.capitalize(((City)region.getRegion()).getAsciiName());
-            String stateName = WordUtils.capitalize(((City)region.getRegion()).getState().getAsciiName());
-            String countryName = WordUtils.capitalize(((City)region.getRegion()).getState().getCountry().getAsciiName());
+    public List<AddressResponse> findSolutionByName(List<String> inputFields) {
+        List<AddressResponse> addressResponses = new ArrayList<>();
+        for (ScoreRegion region : findSolutions(inputFields)) {
+            String cityName = WordUtils.capitalize(((City) region.getRegion()).getAsciiName());
+            String stateName = WordUtils.capitalize(((City) region.getRegion()).getState().getAsciiName());
+            String countryName = WordUtils.capitalize(((City) region.getRegion()).getState().getCountry().getAsciiName());
             Integer score = region.getScore();
-            addressResponses.add(new AddressResponse(countryName,stateName,cityName,score));
+            addressResponses.add(new AddressResponse(countryName, stateName, cityName));
         }
         return addressResponses;
     }
@@ -74,9 +74,11 @@ public class AddressService {
                     cities.addAll(findRegions(inputFields, ((Country) country.getRegion()).getBaseCountry().getCityList(), Scores.CITY_SCORES, country.getScore() / 10));
                 }
             }
-        } else {
+        }
+        if (cities.isEmpty()) {
             cities.addAll(findRegions(inputFields, csvReader.getGlobe().getCities(), Scores.CITY_SCORES, 0));
         }
+
 
         cities.sort(Comparator.comparing(ScoreRegion::getScore).reversed());
         return cities;

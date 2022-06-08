@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Capture Address Application</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<h1>Welcome to our Address Autocorrect application, please introduce your input address:</h1>
+<!--@thymesVar id="inputAddress" type="tudors.administratives.InputAddress"-->
+<form action="#" th:action="@{/addresses}" th:object="${inputAddress}" method="get">
+    <p>Country: <input type="text" th:field="*{country}"/></p>
+    <p>State: <input type="text" th:field="*{state}"/></p>
+    <p>City: <input type="text" th:field="*{city}"/></p>
+    <p>Postal Code: <input type="text" th:field="*{postalCode}"/></p>
+    <p>Street Line: <input type="text" th:field="*{streetLine}"/></p>
+    <p><input type="submit" value="Submit"/> <input type="reset" value="Reset"/></p>
+</form>
+</body>
+</html>

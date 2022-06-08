@@ -9,5 +9,4 @@ public class AddressResponse {
     private String country;
     private String state;
     private String city;
-    private Integer score;
 }

@@ -1,5 +1,6 @@
 package tudors.solver;
 
+import lombok.extern.java.Log;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.geonames.*;
 import org.springframework.stereotype.Component;
@@ -11,11 +12,18 @@ import tudors.model.AddressResponse;
 import tudors.tools.CSVReader;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 
+@Log
 @Component
 public class Solver {
 
     private List<ScoreRegion> scoreRegions = new ArrayList<>();
+
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool(20);
+    private final LevenshteinDistance levDist = new LevenshteinDistance();
 
     //webservice for searching postal codes:
     public List<AddressResponse> searchPostalCode(String postalCode, Integer score) throws Exception {
@@ -34,7 +42,7 @@ public class Solver {
         WebService.postalCodeSearch(searchCriteria);
         List<PostalCode> searchResult = WebService.postalCodeSearch(searchCriteria);
 
-        for(PostalCode code:searchResult){
+        for (PostalCode code : searchResult) {
             //System.out.println(code.getPlaceName()+" : "+code.getCountryCode()+" : "+code.getAdminCode1());
 
             toponymSearchCriteria.setAdminCode1(code.getAdminCode1());
@@ -42,8 +50,8 @@ public class Solver {
             toponymSearchCriteria.setNameEquals(code.getPlaceName());
 
             ToponymSearchResult toponyms = WebService.search(toponymSearchCriteria);
-            for(Toponym toponym:toponyms.getToponyms()){
-                found.add(new AddressResponse(toponym.getCountryName(),toponym.getAdminName1(),toponym.getName(),score));
+            for (Toponym toponym : toponyms.getToponyms()) {
+                found.add(new AddressResponse(toponym.getCountryName(), toponym.getAdminName1(), toponym.getName()));
                 //System.out.println(toponym.getName()+" : "+toponym.getAdminName1()+" : "+toponym.getCountryName());
             }
         }
@@ -67,19 +75,45 @@ public class Solver {
 
     public List<ScoreRegion> findRegions(String input, List<? extends Region> list, int distance, int score) {
         scoreRegions = new ArrayList<>();
-        List<ScoreRegion> leetRegions = findFormattedRegions(leetFormattedInput(input).toLowerCase(), list, distance, score);
-        List<ScoreRegion> formattedRegions = findFormattedRegions(input.toLowerCase(), list, distance, score);
+        List<ScoreRegion> leetRegions = null;
+        List<ScoreRegion> formattedRegions = null;
+        try {
+            leetRegions = forkJoinPool.submit(
+                    () -> findFormattedRegions(leetFormattedInput(input).toLowerCase(), list, distance, score)).get();
+            formattedRegions = forkJoinPool.submit(
+                    () -> findFormattedRegions(input.toLowerCase(), list, distance, score)).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        assert leetRegions != null;
         leetRegions.forEach(this::addOrReplace);
+
+        assert formattedRegions != null;
         formattedRegions.forEach(this::addOrReplace);
+
         scoreRegions.sort(Comparator.comparing(ScoreRegion::getScore).reversed());
         return scoreRegions;
     }
 
     private List<ScoreRegion> findFormattedRegions(String input, List<? extends Region> list, int distance, int score) {
         List<ScoreRegion> foundRegions = new ArrayList<>();
+
+        long stamp1 = System.currentTimeMillis();
         foundRegions.addAll(findBinaryRegions(input, list, score * 10));
-        foundRegions.addAll(findTokenizedRegions(input, list, distance, score * 4));
-        foundRegions.addAll(findEditDistanceRegions(input, list, distance, score * 2));
+        long stamp2 = System.currentTimeMillis();
+        if (foundRegions.isEmpty()) {
+            foundRegions.addAll(findTokenizedRegions(input, list, distance, score * 4));
+        }
+        long stamp3 = System.currentTimeMillis();
+        if (foundRegions.isEmpty()) {
+            foundRegions.addAll(findEditDistanceRegions(input, list, distance, score * 2));
+        }
+        long stamp4 = System.currentTimeMillis();
+
+        log.info("binary search: " + (stamp2 - stamp1));
+        log.info("tokenize search: " + (stamp3 - stamp2));
+        log.info("levenshtein search: " + (stamp4 - stamp3));
 
         return foundRegions;
     }
@@ -105,15 +139,28 @@ public class Solver {
     }
 
     private List<ScoreRegion> findEditDistanceRegions(String input, List<? extends Region> list, int distance, int score) {
-        LevenshteinDistance levDist = new LevenshteinDistance();
-        List<ScoreRegion> foundRegions = new ArrayList<>();
-        int currentDistance;
-        for (Region region : list) {
-            currentDistance = levDist.apply(region.getName(), input);
-            if (currentDistance <= distance) {
-                foundRegions.add(new ScoreRegion(region, score / (currentDistance + 1)));
-            }
+        List<ScoreRegion> foundRegions;
+        try {
+            foundRegions = forkJoinPool.submit(() ->
+                    list.parallelStream()
+                            .filter(region -> levDist.apply(region.getName(), input) <= distance)
+                            .map(region -> new ScoreRegion(region, score / (levDist.apply(region.getName(), input) + 1)))
+                            .collect(Collectors.toList())
+            ).get();
+        } catch (InterruptedException | ExecutionException e) {
+            return new ArrayList<>();
         }
+//        List<ScoreRegion> foundRegions = list.parallelStream()
+//                .filter(region -> levDist.apply(region.getName(),input) <= distance)
+//                .map(region -> new ScoreRegion(region,levDist.apply(region.getName(),input)))
+//                .collect(Collectors.toList());
+//        int currentDistance;
+//        for (Region region : list) {
+//            currentDistance = levDist.apply(region.getName(), input);
+//            if (currentDistance <= distance) {
+//                foundRegions.add(new ScoreRegion(region, score / (currentDistance + 1)));
+//            }
+//        }
         return foundRegions;
     }
 
