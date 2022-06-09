@@ -6,6 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Globe representation having lists of
+ * countries, states and cities,
+ * and methods to populate these lists.
+ *
+ * @author Pricop Tudor-Constatin 2A2
+ * @author Tudose Tudor-Cristian 2A2
+ */
 @Data
 public class Globe {
     private List<Country> countries;

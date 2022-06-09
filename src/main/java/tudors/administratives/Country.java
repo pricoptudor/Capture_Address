@@ -8,6 +8,16 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Country representation extending Region,
+ * adding an extra asciiName property
+ * a baseCountry (for countries with alternate names),
+ * a list with the states of the country and a list
+ * with the cities.
+ *
+ * @author Pricop Tudor-Constatin 2A2
+ * @author Tudose Tudor-Cristian 2A2
+ */
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = false)
@@ -23,7 +33,6 @@ public class Country extends Region {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<State> stateList;
-
 
     @JsonIgnore
     @ToString.Exclude
