@@ -16,6 +16,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
+/**
+ * @author Pricop Tudor-Constantin 2A2
+ * @author Tudose Tudor-Cristian 2A2
+ * <p>
+ * Solver service that has the resulted found regions as field(reset after every request).
+ * Also a Thread Pool is instantiated at program start-up so the requests are light.
+ * A LevenshteinDistance object is also instantiated to ease requests' load.
+ */
 @Log
 @Component
 public class Solver {
@@ -25,7 +33,9 @@ public class Solver {
     private final ForkJoinPool forkJoinPool = new ForkJoinPool(20);
     private final LevenshteinDistance levDist = new LevenshteinDistance();
 
-    //webservice for searching postal codes:
+    /**
+     * Calls GeoNames webservice to find a location from the given postal code.
+     */
     public List<AddressResponse> searchPostalCode(String postalCode, Integer score) throws Exception {
         List<AddressResponse> found = new ArrayList<>();
 
@@ -58,6 +68,10 @@ public class Solver {
         return found;
     }
 
+    /**
+     * Checks whether the found object is already in the list of found regions and adds it if the answer is false
+     * or the found score is greater(that address is more suitable as an answer).
+     */
     private void addOrReplace(ScoreRegion currentRegion) {
         boolean found = false;
         for (ScoreRegion region : scoreRegions) {
@@ -73,6 +87,11 @@ public class Solver {
         }
     }
 
+    /**
+     * Search in parallel for a given input address in a list of regions(with a distance for levenshtein and a score
+     * for results filtering).
+     * The resulted list is filtered to have unique objects with the greatest found score and is returned sorted.
+     */
     public List<ScoreRegion> findRegions(String input, List<? extends Region> list, int distance, int score) {
         scoreRegions = new ArrayList<>();
         List<ScoreRegion> leetRegions = null;
@@ -96,6 +115,13 @@ public class Solver {
         return scoreRegions;
     }
 
+    /**
+     * Search for the formatted input in a list of regions with a given levenshtein(misspelling) distance and a score.
+     * First the search is done binary, with the greatest score, then the region is searched by tokenizing the input and
+     * lastly the input is checked entirely(misspelling included).
+     * The search is stopped after the first step that returns a non-empty list and the time required to search the lists
+     * is logged on the screen.
+     */
     private List<ScoreRegion> findFormattedRegions(String input, List<? extends Region> list, int distance, int score) {
         List<ScoreRegion> foundRegions = new ArrayList<>();
 
@@ -118,6 +144,10 @@ public class Solver {
         return foundRegions;
     }
 
+    /**
+     * Search in the given region list for every token found in the input string(separated by ',./ '), with misspellings
+     * included(levenshtein distance).
+     */
     private List<ScoreRegion> findTokenizedRegions(String input, List<? extends Region> list, int distance, int score) {
         List<ScoreRegion> foundRegions = new ArrayList<>();
         StringTokenizer tokenizer = new StringTokenizer(input, ",.-/ ");
@@ -128,6 +158,11 @@ public class Solver {
         return foundRegions;
     }
 
+    /**
+     * In earlier versions this function searched for every input contained within the input string.
+     * The results were not relevant(ex: 'i','ee' as cities) so the function will be removed in future versions.
+     */
+    @Deprecated
     private List<ScoreRegion> findContainedRegions(String input, List<? extends Region> list, int score) {
         List<ScoreRegion> foundRegions = new ArrayList<>();
         for (Region region : list) {
@@ -138,6 +173,11 @@ public class Solver {
         return foundRegions;
     }
 
+    /**
+     * Search for an input region name in a given list of regions, misspelling included(edit distance) and the lowest score.
+     * The search is done using parallel stream on the collection of regions and a pool of threads(thread initialization
+     * is quite expensive).
+     */
     private List<ScoreRegion> findEditDistanceRegions(String input, List<? extends Region> list, int distance, int score) {
         List<ScoreRegion> foundRegions;
         try {
@@ -164,6 +204,10 @@ public class Solver {
         return foundRegions;
     }
 
+    /**
+     * Search for an input region name in a given list of regions in binary method(the list was previously sorted).
+     * It returns all regions with the same name as the given input.
+     */
     private List<ScoreRegion> findBinaryRegions(String input, List<? extends Region> list, int score) {
         List<ScoreRegion> foundRegions = new ArrayList<>();
         int startIndex = Collections.binarySearch(list, input);
@@ -178,6 +222,9 @@ public class Solver {
         return foundRegions;
     }
 
+    /**
+     * Formats a given string input with the leet alphabet(hackers alphabet).
+     */
     private String leetFormattedInput(String input) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < input.length(); i++) {

@@ -13,13 +13,22 @@ import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//TODO: Cautare cu streamuri in paralel
+/**
+ * @author Pricop Tudor-Constantin 2A2
+ * @author Tudose Tudor-Cristian 2A2
+ * <p>
+ * Class responsible with retrieving data from the input file(faster than database).
+ * Globe -> structure that holds the structure of cities, states and cities.
+ */
 @Log
 @Getter
 @Component
 public class CSVReader {
-    private Globe globe = new Globe();
+    private final Globe globe = new Globe();
 
+    /**
+     * Inserts data from an input file and initializes the globe(the whole structure) + sorts the resulted lists.
+     */
     public void insertDataFromCsv(String path) {
         try (Scanner scanner = new Scanner(new File(path))) {
             scanner.nextLine();
@@ -114,6 +123,9 @@ public class CSVReader {
         System.out.println("Sorted: " + globe.getCities().size());
     }
 
+    /**
+     * Initialization of the program in-memory database.
+     */
     public CSVReader() {
         insertDataFromCsv("src/main/resources/input.csv");
     }

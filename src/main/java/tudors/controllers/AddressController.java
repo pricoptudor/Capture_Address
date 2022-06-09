@@ -11,6 +11,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author Pricop Tudor-Constantin 2A2
+ * @author Tudose Tudor-Cristian 2A2
+ * <p>
+ * Application entry-point:
+ * - has a service that computes a result for the given address input;
+ * - logs request time metrics;
+ * - returns a JSON-formatted list of Address DTO-s (country name, state name, city name) for the most probable results;
+ */
 @Log
 @RestController
 @CrossOrigin
