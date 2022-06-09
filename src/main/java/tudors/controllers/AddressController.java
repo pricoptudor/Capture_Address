@@ -3,11 +3,8 @@ package tudors.controllers;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import tudors.administratives.InputAddress;
-import tudors.administratives.ScoreRegion;
-import tudors.model.AddressResponse;
+import tudors.dtos.AddressResponse;
 import tudors.services.AddressService;
 
 import java.util.ArrayList;

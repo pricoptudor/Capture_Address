@@ -21,13 +21,25 @@ class AddressServiceTest {
     private String uri = "https://address-capture.herokuapp.com/addresses";
 
     @Test
-    void testSolution(){
-        assertEquals(findSolutionByName("Romania","","Onesti","",""),"{country=Romania, state=Bacau, city=Onesti, score=2000.0}");
-        assertEquals(findSolutionByName("United States","Florida","Tamarac","",""),"{country=United States, state=Florida, city=Tamarac, score=3000.0}");
-        assertEquals(findSolutionByName("United States","Kansas","Moundridge","",""),"{country=United States, state=Kansas, city=Moundridge, score=3000.0}");
+    void testSolution() {
+        assertEquals(findSolutionByName("Romania", "", "Onesti", "", ""), "{country=Romania, state=Bacau, city=Onesti}");
+        assertEquals(findSolutionByName("United States", "Florida", "Tamarac", "", ""), "{country=United States, state=Florida, city=Tamarac}");
+        assertEquals(findSolutionByName("United States", "Kansas", "Moundridge", "", ""), "{country=United States, state=Kansas, city=Moundridge}");
+        assertEquals(findSolutionByName("United States", "New Jersey", "Belvidere", "", ""), "{country=United States, state=New Jersey, city=Belvidere}");
+        assertEquals(findSolutionByName("United States", "New Jersey", "Belvidere", "", ""), "{country=United States, state=New Jersey, city=Belvidere}");
+        assertEquals(findSolutionByName("Romania", "Targu Mures", "MureŞ", "", ""), "{country=Romania, state=Mures, city=Targu-mures}");
+        assertEquals(findSolutionByName("Romania", "Bacau", "Casin", "", ""), "{country=Romania, state=Bacau, city=Casin}");
+        assertEquals(findSolutionByName("Pakistan", "Punjab", "Sialkot", "", ""), "{country=Pakistan, state=Punjab, city=Sialkot}");
+        assertEquals(findSolutionByName("", "", "", "601132", ""), "{country=Romania, state=Bacău, city=Oneşti}");
+        assertEquals(findSolutionByName("", "Chihuahua", "", "", "Centro"), "{country=Mexico, state=Chihuahua, city=Chihuahua}");
+        assertEquals(findSolutionByName("", "", "", "Mumbai", "Maharashtra"), "{country=India, state=Maharashtra, city=Mumbai}");
+        assertEquals(findSolutionByName("Архангельск", "", "", "", ""), "{country=Russia, state=Arkhangelskaya, city=Arkhangel'sk}");
+        assertEquals(findSolutionByName("", "Каменск-Шахтинский", "", "Russia", ""), "{country=Russia, state=Rostov, city=Kamensk-shakhtinskiy}");
+        assertEquals(findSolutionByName("", "", "", "", "Paphos"), "{country=Cyprus, state=Pafos, city=Paphos}");
+        assertEquals(findSolutionByName("", "辽宁省", "沈阳市-皇姑区", "", ""), "{country=China, state=Liaoning, city=Shenyang}");
     }
 
-    String findSolutionByName(String country,String state,String city,String postalCode,String streetLine) {
+    String findSolutionByName(String country, String state, String city, String postalCode, String streetLine) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<?> entity = new HttpEntity<>(headers);

@@ -1,4 +1,4 @@
-package tudors.administratives;
+package tudors.dtos;
 
 import lombok.Data;
 

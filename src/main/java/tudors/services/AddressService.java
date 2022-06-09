@@ -5,12 +5,11 @@ import org.apache.commons.text.WordUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tudors.administratives.*;
-import tudors.model.AddressResponse;
+import tudors.dtos.AddressResponse;
 import tudors.solver.Solver;
 import tudors.tools.CSVReader;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 

@@ -6,7 +6,7 @@
 </head>
 <body>
 <h1>Welcome to our Address Autocorrect application, please introduce your input address:</h1>
-<!--@thymesVar id="inputAddress" type="tudors.administratives.InputAddress"-->
+<!--@thymesVar id="inputAddress" type="tudors.dtos.InputAddress"-->
 <form action="#" th:action="@{/addresses}" th:object="${inputAddress}" method="get">
     <p>Country: <input type="text" th:field="*{country}"/></p>
     <p>State: <input type="text" th:field="*{state}"/></p>

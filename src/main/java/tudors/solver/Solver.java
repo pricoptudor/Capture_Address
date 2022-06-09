@@ -8,7 +8,7 @@ import tudors.administratives.Country;
 import tudors.administratives.Region;
 import tudors.administratives.ScoreRegion;
 import tudors.administratives.State;
-import tudors.model.AddressResponse;
+import tudors.dtos.AddressResponse;
 import tudors.tools.CSVReader;
 
 import java.util.*;

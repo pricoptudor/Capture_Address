@@ -1,4 +1,4 @@
-package tudors.model;
+package tudors.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
